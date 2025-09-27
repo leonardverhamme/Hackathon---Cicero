@@ -1,0 +1,6 @@
+fastapi[all]
+uvicorn
+pydantic
+httpx
+weaviate-client
+python-dotenv
