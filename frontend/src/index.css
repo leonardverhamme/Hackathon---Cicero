@@ -1,0 +1,124 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Cicero Design System - Gemini-Inspired Legal Platform
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Cicero Color Palette */
+    --background: 210 11% 97%; /* #F8F9FA - Application background */
+    --foreground: 210 9% 13%; /* #202124 - Primary text */
+
+    --card: 0 0% 100%; /* #FFFFFF - Card backgrounds */
+    --card-foreground: 210 9% 13%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 9% 13%;
+
+    /* Primary Blue System */
+    --primary: 217 89% 51%; /* #1A73E8 - Primary Blue */
+    --primary-accent: 221 83% 59%; /* #4285F4 - Accent Blue */
+    --primary-foreground: 0 0% 100%;
+    --primary-selected: 221 100% 96%; /* #E8F0FE - Selected state background */
+
+    /* Surface & Text Colors */
+    --secondary: 220 14% 96%; /* #F1F3F4 - Light surface */
+    --secondary-foreground: 210 9% 13%;
+
+    --muted: 220 13% 91%; /* #DADCE0 - Borders & dividers */
+    --muted-foreground: 206 6% 39%; /* #5F6368 - Secondary text */
+
+    --accent: 220 14% 96%;
+    --accent-foreground: 210 9% 13%;
+
+    /* Success State */
+    --success: 145 63% 32%; /* #1E8E3E - Completed state */
+    --success-foreground: 0 0% 100%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 220 13% 91%; /* #DADCE0 */
+    --input: 220 13% 91%;
+    --ring: 217 89% 51%;
+
+    --radius: 1rem; /* 16px for cards */
+    --radius-sm: 0.5rem; /* 8px for buttons */
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(217 89% 51%), hsl(221 83% 59%));
+    --gradient-subtle: linear-gradient(180deg, hsl(0 0% 100%), hsl(210 11% 97%));
+
+    /* Shadows */
+    --shadow-card: 0px 1px 3px rgba(0, 0, 0, 0.1);
+    --shadow-hover: 0px 4px 12px rgba(0, 0, 0, 0.15);
+    --shadow-focus: 0px 8px 24px rgba(0, 0, 0, 0.2);
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}

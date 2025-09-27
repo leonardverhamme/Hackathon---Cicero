@@ -1,0 +1,7 @@
+fastapi[all]
+uvicorn
+pydantic
+httpx
+python-dotenv
+requests
+bey
