@@ -93,7 +93,8 @@ async def generate_streaming_response(prompt: str):
                             if "choices" in chunk and chunk["choices"]:
                                 content = chunk["choices"][0].get("delta", {}).get("content", "")
                                 if content:
-                                    yield content
+                                    # CORRECT SSE FORMAT: "data: " prefix and "\n\n" suffix
+                                    yield f"data: {json.dumps(content)}\n\n"
                         except json.JSONDecodeError:
                             pass # Ignore empty or malformed lines
         except httpx.RequestError as e:

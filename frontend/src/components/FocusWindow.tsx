@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X, CheckCircle, Download, Save } from "lucide-react";
+import { X, CheckCircle, Download, Save, Bot, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { StreamingCard } from "./StreamingCard";
@@ -21,6 +21,58 @@ interface FocusWindowProps {
   onClose: () => void;
 }
 
+// NEW: Dedicated component for global status in header
+function StatusIndicator({ status }: { status: { name: string; error: string | null } }) {
+  const statusConfig = {
+    FETCHING: { icon: Bot, text: "Contacting server for call transcript...", color: "text-gray-500" },
+    READY: { icon: FileText, text: "call transcript retrieved successfully.", color: "text-green-600" },
+    ERROR: { icon: FileText, text: status.error || "An error occurred.", color: "text-red-600" },
+  };
+  const current = statusConfig[status.name as keyof typeof statusConfig] || statusConfig.FETCHING;
+
+  return (
+    <div className="flex items-center gap-2 text-xs">
+      <current.icon className={`w-3 h-3 ${current.color}`} />
+      <span className={current.color}>{current.text}</span>
+    </div>
+  );
+}
+
+// Global styles for better markdown rendering
+const GlobalStyles = () => (
+  <style dangerouslySetInnerHTML={{
+    __html: `
+    .prose {
+      --tw-prose-body: #374151;
+      --tw-prose-headings: #111827;
+      --tw-prose-bold: #111827;
+      --tw-prose-bullets: #3b82f6;
+      --tw-prose-invert-body: #d1d5db;
+      --tw-prose-invert-headings: #fff;
+      --tw-prose-invert-bold: #fff;
+    }
+    .prose h2, .prose h3 {
+      font-weight: 700 !important;
+      letter-spacing: -0.02em;
+    }
+    .prose h2 {
+      font-size: 1.25rem !important;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .dark .prose h2 {
+        border-bottom-color: #374151;
+    }
+    .prose h3 {
+        font-size: 1.1rem !important;
+        margin-top: 2rem;
+    }
+    .prose strong {
+      font-weight: 600 !important;
+    }
+  `}} />
+);
+
 export function FocusWindow({ task, sessionId, onComplete, onClose }: FocusWindowProps) {
   const [overallProgress, setOverallProgress] = useState(0);
   const [completedStreams, setCompletedStreams] = useState(0);
@@ -35,10 +87,11 @@ export function FocusWindow({ task, sessionId, onComplete, onClose }: FocusWindo
   const [canStreamLegal, setCanStreamLegal] = useState<boolean>(false);
   const [canStreamRisk, setCanStreamRisk] = useState<boolean>(false);
 
-  // Data retrieval status
-  const [transcriptRetrieved, setTranscriptRetrieved] = useState<boolean>(false);
-  const [vectorStoreQueried, setVectorStoreQueried] = useState<boolean>(false);
+  // NEW: State object to manage global status
+  const [status, setStatus] = useState<{ name: string; error: string | null }>({ name: 'FETCHING', error: null });
 
+  // Weaviate query status
+  const [weaviateQueried, setWeaviateQueried] = useState<boolean>(false);
   // No need for local sessionId state, it's passed as a prop
   useEffect(() => {
     // Reset progress when sessionId changes
@@ -50,12 +103,11 @@ export function FocusWindow({ task, sessionId, onComplete, onClose }: FocusWindo
     setCanStreamSummary(false);
     setCanStreamLegal(false);
     setCanStreamRisk(false);
-    setTranscriptRetrieved(false);
-    setVectorStoreQueried(false);
+    setStatus({ name: 'FETCHING', error: null });
 
-    // Simulate transcript retrieval
+    // Simulate transcript retrieval - in real app this would be an API call
     if (sessionId) {
-      setTranscriptRetrieved(true);
+      setStatus({ name: 'READY', error: null });
       setCanStreamSummary(true);
     }
   }, [sessionId]);
@@ -76,7 +128,7 @@ export function FocusWindow({ task, sessionId, onComplete, onClose }: FocusWindo
     // Store the completed text and enable the next step
     if (streamType === "summary") {
       setSummaryText(finalContent);
-      setVectorStoreQueried(true); // Mark vector store as queried
+      setWeaviateQueried(true); // Mark Weaviate as queried
       setCanStreamLegal(true); // Once summary is done, start the legal assessment
     } else if (streamType === "legal_assessment") {
       setLegalAssessmentText(finalContent);
@@ -85,93 +137,81 @@ export function FocusWindow({ task, sessionId, onComplete, onClose }: FocusWindo
   };
 
   return (
-    <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-4xl max-h-[90vh] bg-card shadow-focus animate-fade-in overflow-hidden">
-        {/* Header */}
-        <div className="p-6 border-b border-border">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-xl font-semibold text-foreground">
-                Live Analysis: {task.title}
-              </h2>
-              <p className="text-sm text-muted-foreground mt-1">
-                Email from Benjamin Chino to Harvey Specter
-              </p>
+    <>
+      <GlobalStyles />
+      <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <Card className="w-full max-w-4xl max-h-[90vh] bg-card shadow-focus animate-fade-in overflow-hidden">
+          {/* Header */}
+          <div className="p-6 border-b border-border">
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <div className="flex items-center gap-3">
+                  <h2 className="text-xl font-semibold text-foreground">
+                    Live Analysis: AI Case Preparation: EU AI Act Compliance
+                  </h2>
+                  <StatusIndicator status={status} />
+                </div>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Email from Benjamin Chino to Harvey Specter
+                </p>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onClose}
+                className="h-8 w-8 text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-4 w-4" />
+              </Button>
             </div>
-            <Button 
-              variant="ghost" 
-              size="icon"
-              onClick={onClose}
-              className="h-8 w-8 text-muted-foreground hover:text-foreground"
-            >
-              <X className="h-4 w-4" />
-            </Button>
+
+            {/* Progress Bar */}
+            <div className="mt-4">
+              <div className="w-full bg-muted rounded-full h-1">
+                <div
+                  className="h-1 bg-gradient-primary rounded-full transition-all duration-500"
+                  style={{ width: `${overallProgress}%` }}
+                />
+              </div>
+            </div>
           </div>
-          
-          {/* Progress Bar */}
-          <div className="mt-4">
-            <div className="w-full bg-muted rounded-full h-1">
-              <div 
-                className="h-1 bg-gradient-primary rounded-full transition-all duration-500"
-                style={{ width: `${overallProgress}%` }}
+
+          {/* Content */}
+          <div className="p-6 overflow-y-auto max-h-[calc(90vh-250px)] space-y-6">
+            <StreamingCard
+              title="1. Call Summary"
+              sessionId={sessionId}
+              streamType="summary"
+              isReadyToStream={canStreamSummary}
+              onStreamComplete={(finalContent) => handleStreamComplete("summary", finalContent)}
+            />
+
+            <div className="space-y-2">
+              <StreamingCard
+                title="2. Legal Assessment"
+                sessionId={sessionId}
+                streamType="legal_assessment"
+                isReadyToStream={canStreamLegal}
+                onStreamComplete={(finalContent) => handleStreamComplete("legal_assessment", finalContent)}
               />
-            </div>
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)] space-y-6">
-          {/* Data Retrieval Status */}
-          <div className="space-y-3 mb-6">
-            <div className="flex items-center space-x-3 p-3 bg-muted/50 rounded-lg">
-              {transcriptRetrieved ? (
-                <CheckCircle className="w-5 h-5 text-green-500" />
-              ) : (
-                <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              {weaviateQueried && (
+                <div className="flex items-center justify-end gap-2 text-xs text-green-600 ml-6">
+                  <CheckCircle className="w-3 h-3" />
+                  <span>Weaviate queried successfully</span>
+                </div>
               )}
-              <span className="text-sm font-medium">
-                {transcriptRetrieved ? "Latest call transcript retrieved" : "Retrieving latest call transcript..."}
-              </span>
             </div>
 
-            <div className="flex items-center space-x-3 p-3 bg-muted/50 rounded-lg">
-              {vectorStoreQueried ? (
-                <CheckCircle className="w-5 h-5 text-green-500" />
-              ) : (
-                <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-              )}
-              <span className="text-sm font-medium">
-                {vectorStoreQueried ? "Weaviate legal vector database queried" : "Querying Weaviate legal vector database..."}
-              </span>
-            </div>
+            <StreamingCard
+              title="3. Legal Summary & Next Steps"
+              sessionId={sessionId}
+              streamType="risk_assessment"
+              isReadyToStream={canStreamRisk}
+              // Pass the completed legal assessment text in the POST body
+              postBody={{ legal_assessment: legalAssessmentText }}
+              onStreamComplete={(finalContent) => handleStreamComplete("risk_assessment", finalContent)}
+            />
           </div>
-
-          <StreamingCard
-            title="1. Call Summary"
-            sessionId={sessionId}
-            streamType="summary"
-            isReadyToStream={canStreamSummary}
-            onStreamComplete={(finalContent) => handleStreamComplete("summary", finalContent)}
-          />
-
-          <StreamingCard
-            title="2. Legal Assessment"
-            sessionId={sessionId}
-            streamType="legal_assessment"
-            isReadyToStream={canStreamLegal}
-            onStreamComplete={(finalContent) => handleStreamComplete("legal_assessment", finalContent)}
-          />
-
-          <StreamingCard
-            title="3. Legal Summary & Next Steps"
-            sessionId={sessionId}
-            streamType="risk_assessment"
-            isReadyToStream={canStreamRisk}
-            // Pass the completed legal assessment text in the POST body
-            postBody={{ legal_assessment: legalAssessmentText }}
-            onStreamComplete={(finalContent) => handleStreamComplete("risk_assessment", finalContent)}
-          />
-        </div>
 
         {/* Action Bar */}
         <div className="p-6 border-t border-border bg-gradient-subtle">
@@ -206,5 +246,6 @@ export function FocusWindow({ task, sessionId, onComplete, onClose }: FocusWindo
         </div>
       </Card>
     </div>
+    </>
   );
 }

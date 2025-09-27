@@ -82,16 +82,34 @@ export function StreamingCard({
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
+      let buffer = '';
 
       // *** THIS IS THE CORRECTED STREAMING LOGIC ***
       while (true) {
         const { done, value } = await reader.read();
-        if (done) {
-          break;
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+            if (line.startsWith('data: ')) {
+                const data = line.substring(6);
+                try {
+                    // The data is a JSON string, so we parse it
+                    const parsed = JSON.parse(data);
+                    setContent((prev) => prev + parsed);
+                    contentRef.current += parsed;
+                } catch (e) {
+                    // Handle non-JSON data like error messages
+                    if (data.startsWith('[Server Error')) {
+                       setContent((prev) => prev + data);
+                       contentRef.current += data;
+                    }
+                }
+            }
         }
-        const chunk = decoder.decode(value, { stream: true });
-        setContent((prev) => prev + chunk);
-        contentRef.current += chunk; // Update the ref with the new chunk
       }
 
     } catch (error) {
