@@ -43,7 +43,7 @@ export function StreamingCard({
         setStatusMessage("Analyzing transcript...");
         await new Promise(resolve => setTimeout(resolve, 500)); // Small delay
       } else if (streamType === "legal_assessment") {
-        setStatusMessage("Querying Weaviate legal vector store...");
+        setStatusMessage("Generating legal analysis...");
         // The actual 3s delay is now on the backend, so the frontend
         // will show this message until the first token arrives.
       } else if (streamType === "risk_assessment") {

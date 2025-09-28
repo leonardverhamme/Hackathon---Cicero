@@ -56,7 +56,7 @@ async def generate_streaming_response(prompt: str):
     Generic generator to stream responses from an OpenAI-compatible API.
     """
     request_data = {
-        "model": "gpt-4-turbo", # Using a more common and available model name
+        "model": "gpt-5-mini-2025-08-07", # Updated to the specified model name
         "messages": [{"role": "user", "content": prompt}],
         "stream": True
     }

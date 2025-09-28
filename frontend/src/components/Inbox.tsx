@@ -3,6 +3,7 @@ import { TaskCard } from "./TaskCard";
 import { FocusWindow } from "./FocusWindow";
 import { MeetingWindow } from "./MeetingWindow";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast"; // Import useToast
 
 interface Task {
   id: string;
@@ -56,6 +57,7 @@ export function Inbox() {
   const [animatingTaskId, setAnimatingTaskId] = useState<string | null>(null);
   const [showMeeting, setShowMeeting] = useState(false);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null); // To store the session_id from backend
+  const { toast } = useToast(); // Initialize useToast
 
   const newTasks = tasks.filter(task => task.status === "new");
   const completedTasks = tasks.filter(task => task.status === "completed");
@@ -70,7 +72,13 @@ export function Inbox() {
 
   const handleCallFinished = async () => {
     setShowMeeting(false);
-    // Trigger API call to get the latest call transcript
+    
+    toast({
+      title: "Processing...",
+      description: "Retrieving call transcript...",
+      variant: "default", // Changed from "foreground" to "default"
+    });
+
     try {
       const response = await fetch("http://localhost:8001/get_latest_call_transcript");
       if (!response.ok) {
@@ -78,18 +86,24 @@ export function Inbox() {
       }
       const data = await response.json();
       setCurrentSessionId(data.session_id); // Store the session ID
-      // Optionally, you could create a new task here with the transcript
-      // For now, we'll just use the session_id to open the FocusWindow
       
-      // Find the task that was just "taken" and associate the session_id with it
-      // For demo purposes, we'll assume the first new task is the one that just finished a call
       if (newTasks.length > 0) {
         setFocusTask({ ...newTasks[0], caseId: data.session_id }); // Use caseId to store session_id for now
       }
 
+      toast({
+        title: "Success!",
+        description: "Call transcript retrieved successfully!",
+        variant: "default", // Changed from "success" to "default"
+      });
+
     } catch (error) {
       console.error("Failed to fetch call transcript:", error);
-      // Handle error, maybe show a toast notification
+      toast({
+        title: "Error",
+        description: `Failed to retrieve call transcript: ${(error as Error).message}`,
+        variant: "destructive",
+      });
     }
   };
 
